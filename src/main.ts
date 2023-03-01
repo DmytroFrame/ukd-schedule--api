@@ -1,14 +1,20 @@
-import { getSchedule } from './api/getSchedule';
-import express from 'express'
+import express from "express";
+import cors from "cors";
+import Endpoints from "./routes";
 
 const app = express();
+const port = process.env.PORT || 7000;
 
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+    maxAge: 9999,
+  })
+);
 
-app.get('/', function(req, res) {
-    res.send('hello world');
-  });
+app.use("/api", Endpoints);
 
-getSchedule()
-
-
-app.listen(3000)
+app.listen(port, () => {
+  console.log("Server listen port:", port);
+});
