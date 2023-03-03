@@ -1,9 +1,11 @@
 # UKD Schedule API
+
 ## This reverse server for serialization data to JSON.
 
 ### Requires Node.js version ^18 to work
 
-## API routes:
+## Local API routes:
+
 ```bash
 # get a list of group names
 GET: /api/groups
@@ -18,13 +20,15 @@ GET: /api/teachers
 #   teacher - teacher's name in string
 GET: /api/schedules
 ```
+
+## Online API routes:
+- https://api.dmytroframe.site/ukd/groups
+- https://api.dmytroframe.site/ukd/teachers
+- https://api.dmytroframe.site/ukd/schedules
+
 ## Running in Docker:
+
 ```bash
 # start docker container
 $ docker run -p 7000:7000 ukd-schedule--api
 ```
-
-
-
-
-
