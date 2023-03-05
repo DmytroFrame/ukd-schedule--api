@@ -2,7 +2,7 @@ import { ConvertWin1254 } from "../utils/ConvertWin1254";
 import { BASE_API_URL } from "./baseUrl";
 
 export async function getGroups() {
-  const request = await fetch(BASE_API_URL + "?n=701&lev=141", {
+  const request = await fetch(BASE_API_URL + "?n=701&lev=142", {
     method: "GET",
   });
 
