@@ -1,9 +1,10 @@
 import express from "express";
 import cors from "cors";
 import Endpoints from "./routes";
+import { getCacheMiddleware } from "./cache-middleware";
 
-const app = express();
 const port = process.env.PORT || 7000;
+const app = express();
 
 app.use(
   cors({
@@ -13,7 +14,7 @@ app.use(
   })
 );
 
-app.use("/api", Endpoints);
+app.use("/api", getCacheMiddleware(86400), Endpoints);
 
 app.listen(port, () => {
   console.log("Server listen port:", port);
