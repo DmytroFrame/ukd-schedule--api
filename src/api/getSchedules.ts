@@ -19,7 +19,6 @@ export async function getSchedules(param: IGetScheduleDto) {
 function parseSchedule(payload: string) {
   const html = parse(payload);
   const result: ISchedule[] = [];
-  let indexCount = -1;
 
   for (let element of html.querySelectorAll("h4").slice(4)) {
     result.push({
@@ -29,19 +28,26 @@ function parseSchedule(payload: string) {
     });
   }
 
-  for (let element of html.querySelectorAll("tr")) {
-    const index = +element.childNodes[0].innerText;
-    const date = element.childNodes[1].innerText;
-    const title = element.childNodes[2].innerText;
+  let indexCount = -1;
+  const table = html.querySelectorAll(".col-md-6 > table");
 
-    if (index === 1) indexCount++;
-    if (title === " ") continue;
+  for (const tbody of table) {
+    for (const tr of tbody.childNodes) {
+      const index = Number(tr.childNodes[0].innerText);
+      const date = tr.childNodes[1].innerText;
+      const title = tr.childNodes[2].innerText;
+      const rawTitle = tr.childNodes[2].toString();
 
-    result[indexCount].lessons.push({
-      index,
-      date: `${date.slice(0, 5)}-${date.slice(5)}`,
-      title,
-    });
+      if (index === 1) indexCount++;
+      if (title === " ") continue;
+
+      result[indexCount].lessons.push({
+        index,
+        date: `${date.slice(0, 5)}-${date.slice(5)}`,
+        title,
+        rawTitle,
+      });
+    }
   }
 
   return result;
@@ -51,6 +57,7 @@ interface ILesson {
   index: number;
   date: string;
   title: string;
+  rawTitle: string;
 }
 
 interface ISchedule {
