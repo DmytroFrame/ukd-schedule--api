@@ -22,9 +22,9 @@ GET: /api/schedules
 ```
 
 ## Online API routes:
-- https://api.dmytroframe.site/ukd/groups
-- https://api.dmytroframe.site/ukd/teachers
-- https://api.dmytroframe.site/ukd/schedules
+- https://api.dmytroframe.com/ukd/groups
+- https://api.dmytroframe.com/ukd/teachers
+- https://api.dmytroframe.com/ukd/schedules
 
 ## Running in Docker:
 
