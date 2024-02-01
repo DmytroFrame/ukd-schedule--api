@@ -17,7 +17,9 @@ export class ConvertWin1254 {
       if (index % 2 === 0) result += `%${hex[index]}${hex[index + 1]}`;
     }
 
-    if (text.split("-")[1]) result += "-" + text.split("-")[1];
+    text.split("-").slice(1).forEach((_, index) => {
+        result += "-" + text.split("-")[index + 1];
+    });
 
     return result;
   }
