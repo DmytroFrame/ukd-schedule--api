@@ -1,53 +1,9 @@
-import { parse } from "node-html-parser";
 import { IGetScheduleDto } from "../dto/getScheduleDto";
 import { FormatDate } from "../utils/FormatDate";
 import { ConvertWin1254 } from "../utils/ConvertWin1254";
 import { BASE_API_URL } from "./baseUrl";
+import * as cheerio from "cheerio";
 
-export async function getSchedules(param: IGetScheduleDto) {
-  let body = `faculty=0&teacher=${param.teacher}&course=0&group=${param.group}&sdate=${param.startAt}&edate=${param.endAt}&n=700`;
-
-  const request = await fetch(BASE_API_URL + "?n=700", {
-    method: "POST",
-    body,
-  });
-
-  const text = ConvertWin1254.from(Buffer.from(await request.arrayBuffer()));
-  return parseSchedule(text);
-}
-
-function parseSchedule(payload: string) {
-  const html = parse(payload);
-  const result: ISchedule[] = [];
-  let indexCount = -1;
-
-  for (let element of html.querySelectorAll("h4").slice(4)) {
-    result.push({
-      date: FormatDate.from(element.childNodes[0].innerText),
-      weekName: element.childNodes[1].innerText,
-      lessons: [],
-    });
-  }
-
-  for (let element of html.querySelectorAll("tr")) {
-    const index = +element.childNodes[0].innerText;
-    const date = element.childNodes[1].innerText;
-    const title = element.childNodes[2].innerText;
-    const rawTitle = element.childNodes[2].toString();
-
-    if (index === 1) indexCount++;
-    if (title === " ") continue;
-
-    result[indexCount].lessons.push({
-      index,
-      date: `${date.slice(0, 5)}-${date.slice(5)}`,
-      title,
-      rawTitle,
-    });
-  }
-
-  return result;
-}
 interface ILesson {
   index: number;
   date: string;
@@ -59,4 +15,60 @@ interface ISchedule {
   date: Date;
   weekName: string;
   lessons: ILesson[];
+}
+
+export async function getSchedules(param: IGetScheduleDto) {
+  let body = `faculty=0&teacher=${param.teacher}&course=0&group=${param.group}&sdate=${param.startAt}&edate=${param.endAt}&n=700`;
+
+  console.time("#INFO | getSchedule | Time of the schedule request");
+
+  const request = await fetch(BASE_API_URL + "?n=700", {
+    method: "POST",
+    body,
+  });
+
+  const text = ConvertWin1254.from(Buffer.from(await request.arrayBuffer()));
+
+  console.timeEnd("#INFO | getSchedule | Time of the schedule request");
+
+  return parseSchedule(text);
+}
+
+function parseSchedule(payload: string) {
+  console.time("#INFO | parseSchedule | Time of parsing schedule");
+
+  const $ = cheerio.load(payload);
+  const result: ISchedule[] = [];
+
+  for (const day of $("[class*=col-print-6]")) {
+    const h4 = $(day).find("h4").text().trim();
+    const table = $(day).find("table");
+
+    const resultDay = {
+      date: FormatDate.from(h4.split(" ")[0]),
+      weekName: h4.split(" ")[1],
+      lessons: [],
+    };
+
+    for (const tr of $(table).find("tr")) {
+      const index = $($(tr).find("td")[0]).text().trim();
+      const date = $($(tr).find("td")[1]).text().trim();
+      const title = $($(tr).find("td")[2]).text().trim();
+      const rawTitle = $($(tr).find("td")[2]).html();
+
+      if (!title) continue;
+
+      resultDay.lessons.push({
+        index: +index,
+        date: `${date.slice(0, 5)}-${date.slice(5)}`,
+        title,
+        rawTitle,
+      });
+    }
+
+    result.push(resultDay);
+  }
+
+  console.timeEnd("#INFO | parseSchedule | Time of parsing schedule");
+  return result;
 }
