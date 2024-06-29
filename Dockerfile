@@ -1,20 +1,19 @@
-FROM node:18-alpine 
+ARG nodejs=node:20-alpine
+
+FROM ${nodejs} AS builder
 
 WORKDIR /app
-
-COPY package*.json tsconfig*.json nest-cli.json webpack.config.js ./
-COPY src /app/src
-
+COPY . .
 RUN npm install
-RUN npm run build
+RUN npm run bundle
 
-RUN rm *.json && \
-    rm  webpack.config.js && \
-    rm -r .webpack && \
-    rm -r src && \
-    rm -rf node_modules 
 
+FROM ${nodejs} AS runner
+
+WORKDIR /app
+ENV NODE_ENV production
+COPY --from=builder /app/dist/bundle.js ./bundle.js
 
 EXPOSE 7000 
 
-CMD node dist/main.js
+CMD ["node", "bundle.js"]
