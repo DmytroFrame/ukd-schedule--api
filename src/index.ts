@@ -4,12 +4,13 @@ import { getTeachers } from './api/getTeachers';
 import { getScheduleDto } from './dto/getScheduleDto';
 
 const TTL_IN_MS = 1000 * 60 * 10;
-const ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
+const MAX_TTL_IN_SEC = 60 * 60 * 24 * 24;
+const ONE_YEAR_IN_SEC = 60 * 60 * 24 * 365;
 const HEADERS = {
 	'content-type': 'application/json',
 	'access-control-allow-origin': '*',
 	'access-control-allow-methods': 'GET',
-	'cache-control': `public, max-age=${ONE_YEAR_IN_SECONDS}`,
+	'cache-control': `public, max-age=${ONE_YEAR_IN_SEC}`,
 };
 
 async function handler(pathname: string, query: object) {
@@ -44,7 +45,7 @@ export default {
 			const results = await handler(url.pathname, query);
 
 			if (typeof results === 'object') {
-				await env.ukd_rozklad.put(cacheKey, JSON.stringify(results), { metadata: { date: new Date() } });
+				await env.ukd_rozklad.put(cacheKey, JSON.stringify(results), { metadata: { date: new Date() }, expirationTtl: MAX_TTL_IN_SEC });
 				return new Response(JSON.stringify(results), { headers: HEADERS });
 			}
 		} catch (error) {
